@@ -2,16 +2,16 @@
 const ethers = require("ethers");
 const fs = require("fs");
 
-const L2_RPC_ENDPOINT = "https://l2rpc.a1.taiko.xyz";
+const L2_RPC_ENDPOINT = "https://l2rpc.a1.taiko.xyz"
 
 const L2_BLOCK_START_HEIGHT = 0;
 // 512862 timestamp: Thu, 05 Jan 2023 23:59:52 GMT
 // 512863 timestamp: Fri, 06 Jan 2023 00:00:16 GMT
-// const L2_BLOCK_END_HEIGHT = 512862;
-const L2_BLOCK_END_HEIGHT = 10000;
+const L2_BLOCK_END_HEIGHT = 512862;
 
 const GOLDEN_TOUCH_ADDRESS = "0x0000777735367b36bC9B61C50022d9D0700dB4Ec";
 const L2_BRIDGE_ADDRESS = "0x0000777700000000000000000000000000000004";
+const L2_TOKEN_VAULT_ADDRESS = "0x0000777700000000000000000000000000000002";
 
 // Any user with a bridging transaction + one other type of transaction (transfer, dapp tx)
 const REASON_USED_BRIDGE = "REASON_USED_BRIDGE";
@@ -63,8 +63,11 @@ async function main() {
   const l2Provider = new ethers.providers.JsonRpcBatchProvider(L2_RPC_ENDPOINT);
   const accountsList = new AccountsList();
   const bridgeInterface = new ethers.utils.Interface(require("./artifacts/Bridge.json").abi);
+  const tokenVaultInterface = new ethers.utils.Interface(require("./artifacts/TokenVault.json").abi);
 
   const processMessageSelector = bridgeInterface.getSighash("processMessage");
+  const sendEtherSelector = tokenVaultInterface.getSighash("sendEther");
+  const sendERC20Selector = tokenVaultInterface.getSighash("sendERC20");
 
   for (
     let i = L2_BLOCK_START_HEIGHT;
@@ -89,8 +92,8 @@ async function main() {
           const receipt = await l2Provider.getTransactionReceipt(tx.hash);
           if (receipt.status !== 1) continue;
 
-          // Bridging transaction
-          // we use `message.owner` to identify the actual user L2 account,
+          // Bridging transaction: L1 => L2 ETHs && ERC-20s
+          // we use `message.owner` to identify the actual user L2 account address,
           // since `tx.from` is always the relayer account.
           if (
             tx.data &&
@@ -104,6 +107,20 @@ async function main() {
 
             accountsList.addAccountWithReason(
               message.owner,
+              REASON_USED_BRIDGE
+            );
+            continue;
+          }
+
+          // Bridging transaction: L2 => L1 ETHs && ERC-20s
+          // we can simply use `tx.from` to identify the actual user L2 account address.
+          if (
+            tx.data &&
+            tx.to == L2_TOKEN_VAULT_ADDRESS &&
+            (tx.data.startsWith(sendEtherSelector) || tx.data.startsWith(sendERC20Selector))
+          ) {
+            accountsList.addAccountWithReason(
+              tx.from,
               REASON_USED_BRIDGE
             );
             continue;
