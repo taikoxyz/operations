@@ -19,6 +19,10 @@ const REASON_USED_OTHER_TYPES_OF_TXS = "REASON_USED_OTHER_TYPES_OF_TXS";
 
 const BATCH_SIZE = 5000;
 
+let blocksScanned = 0
+let txsScanned = 0
+let successfulTxs = 0
+
 class Account {
   constructor(address, reason) {
     this.address = address;
@@ -87,10 +91,14 @@ async function main() {
 
         const block = await l2Provider.getBlockWithTransactions(height);
 
+        blocksScanned += 1;
+
         for (const tx of block.transactions) {
+          txsScanned += 1;
           if (tx.from === GOLDEN_TOUCH_ADDRESS) continue; // ignore those `TaikoL2.anchor` transactions
           const receipt = await l2Provider.getTransactionReceipt(tx.hash);
           if (receipt.status !== 1) continue;
+          successfulTxs += 1;
 
           // Bridging transaction: L1 => L2 ETHs && ERC-20s
           // we use `message.owner` to identify the actual user L2 account address,
@@ -143,6 +151,7 @@ async function main() {
     };
   });
 
+  console.log({ blocksScanned, txsScanned, successfulTxs })
   console.log(
     `Accounts at least finished one task: ${accountsList.accountList.length}`
   );
