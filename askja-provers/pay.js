@@ -35,6 +35,7 @@ async function main() {
    
 
     data.map(async (prover, i) => {
+        if(prover.sent) return;
         const amount = ethers.utils.formatUnits(prover.amount, 6);
         const tx = await contract.transfer(prover.address, amount);
         await tx.wait(3); // wait for 3 confs?
