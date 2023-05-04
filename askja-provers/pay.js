@@ -47,4 +47,4 @@ async function main() {
         fs.writeFileSync("./output.json", JSON.stringify(data));
     }));
 }
-main().then(() => console.log("done")).catch(e => console.error(e));
+main().then(() => console.log("done")).catch(console.error);
