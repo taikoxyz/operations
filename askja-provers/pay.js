@@ -39,7 +39,7 @@ async function main() {
         nonce  = nonce + i;
         const amount = ethers.utils.formatUnits(prover.amount, 6);
         const tx = await contract.transfer(prover.address, amount, {
-            nonce: nonce
+            nonce
         });
         await tx.wait(3); // wait for 3 confs?
         prover.sent = true;
