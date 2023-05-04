@@ -31,7 +31,7 @@ async function main() {
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_ENDPOINT);
 
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    const contract = new ethers.Contract(USDC_ADDRESS, abi, wallet);
+    const contract = new ethers.Contract(process.env.USDC_ADDRESS, abi, wallet);
    
     const nonce = await wallet.getTransactionCount();
     await Promise.all(data.map(async (prover, i) => {
