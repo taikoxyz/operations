@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ethers": "^5.7.2"
+    "csv": "^6.2.11",
+    "ethers": "^5.7.2",
+    "sqlite3": "^5.1.6"
   }
 }
