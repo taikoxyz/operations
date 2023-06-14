@@ -29,7 +29,7 @@ const abi = [
 ];
 
 async function main() {
-    const data = JSON.parse(fs.readFileSync("../askja-provers/output.json"));
+    const data = JSON.parse(fs.readFileSync("./provers.json"));
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_ENDPOINT);
 
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
@@ -51,7 +51,7 @@ async function main() {
         prover.sent = true;
         prover.txHash = tx.hash;
         data[i] = prover;
-        fs.writeFileSync("./proversOutput.json", JSON.stringify(data));
+        fs.writeFileSync("./provers.json", JSON.stringify(data));
     }));
 }
 main().then(() => console.log("done")).catch(console.error);

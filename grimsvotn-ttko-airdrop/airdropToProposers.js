@@ -29,7 +29,7 @@ const abi = [
 ];
 
 async function main() {
-    const data = JSON.parse(fs.readFileSync("../snaefellsjokull-proposers/rank.json"));
+    const data = JSON.parse(fs.readFileSync("./proposers.json"));
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_ENDPOINT);
 
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
@@ -51,7 +51,7 @@ async function main() {
         proposer.sent = true;
         proposer.txHash = tx.hash;
         data.rank[i] = proposer;
-        fs.writeFileSync("./proposersOutput.json", JSON.stringify(data));
+        fs.writeFileSync("./proposers.json", JSON.stringify(data));
     }));
 }
 main().then(() => console.log("done")).catch(console.error);
