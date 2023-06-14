@@ -3,28 +3,29 @@ const ethers = require("ethers");
 
 const abi = [
     {
-        "constant": false,
         "inputs": [
-            {
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "name": "amount",
-                "type": "uint256"
-            }
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
         ],
         "name": "transfer",
         "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
         ],
-        "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
-    }
+      },
 ];
 
 async function main() {
