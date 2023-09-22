@@ -1,5 +1,6 @@
 const fs = require("fs");
 const ethers = require("ethers");
+var Mutex = require('async-mutex').Mutex;
 
 const abi = [
     {
@@ -29,7 +30,8 @@ const abi = [
 ];
 
 async function main() {
-    const data = JSON.parse(fs.readFileSync("./proposers.json"));
+    const mutex = new Mutex();
+    const data = JSON.parse(fs.readFileSync(process.env.DATA_FILE));
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_ENDPOINT);
 
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
@@ -37,21 +39,29 @@ async function main() {
    
     let nonce = await wallet.getTransactionCount();
 
-    await Promise.all(data.rank.map(async (proposer, i) => {
-        if(proposer.sent) return;
-        const amount = ethers.utils.parseUnits("50", 8);
-        console.log(`sending ${amount} to ${proposer.address}`)
-        nonce = nonce + i;
+    let firstTx = true;
+    await Promise.all(data.map(async (airdroppee, i) => {
+        if(airdroppee.sent) return;
+        if(airdroppee.address == "0x0000000000000000000000000000000000000000") return;
+        if(airdroppee.address == "0x0000000000000000000000000000000000000001") return;
         
-        const tx = await contract.transfer(proposer.address, amount, {
-            nonce
+        const amount = ethers.utils.parseUnits("2.5", 18);
+        const release = await mutex.acquire();
+        nonce = i == 0 || firstTx ? nonce : nonce + 1;
+        if(firstTx) {
+            firstTx = false;
+        }
+        console.log(`sending ${amount} to ${airdroppee.address} with nonce ${nonce}`)
+        const tx = await contract.transfer(airdroppee.address, amount, {
+             nonce
         });
+        release();
 
-        await tx.wait(3); // wait for 3 confs?
-        proposer.sent = true;
-        proposer.txHash = tx.hash;
-        data.rank[i] = proposer;
-        fs.writeFileSync("./proposers.json", JSON.stringify(data));
+
+        await tx.wait(2);
+        airdroppee.sent = true;
+        airdroppee.txHash = tx.hash;
+        fs.writeFileSync(process.env.DATA_FILE, JSON.stringify(data));
     }));
 }
 main().then(() => console.log("done")).catch(console.error);

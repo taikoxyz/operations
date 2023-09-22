@@ -10,8 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async-mutex": "^0.4.0",
     "csv": "^6.2.11",
     "ethers": "^5.7.2",
+    "install": "^0.13.0",
+    "npm": "^9.7.1",
     "sqlite3": "^5.1.6"
   }
 }
