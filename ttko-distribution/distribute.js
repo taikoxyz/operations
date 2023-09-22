@@ -40,10 +40,10 @@ async function main() {
     let nonce = await wallet.getTransactionCount();
 
     let firstTx = true;
-    await Promise.all(data.map(async (airdroppee, i) => {
-        if(airdroppee.sent) return;
-        if(airdroppee.address == "0x0000000000000000000000000000000000000000") return;
-        if(airdroppee.address == "0x0000000000000000000000000000000000000001") return;
+    await Promise.all(data.map(async (recipient, i) => {
+        if(recipient.sent) return;
+        if(recipient.address == "0x0000000000000000000000000000000000000000") return;
+        if(recipient.address == "0x0000000000000000000000000000000000000001") return;
         
         const amount = ethers.utils.parseUnits("2.5", 18);
         const release = await mutex.acquire();
@@ -51,16 +51,16 @@ async function main() {
         if(firstTx) {
             firstTx = false;
         }
-        console.log(`sending ${amount} to ${airdroppee.address} with nonce ${nonce}`)
-        const tx = await contract.transfer(airdroppee.address, amount, {
+        console.log(`sending ${amount} to ${recipient.address} with nonce ${nonce}`)
+        const tx = await contract.transfer(recipient.address, amount, {
              nonce
         });
         release();
 
 
         await tx.wait(2);
-        airdroppee.sent = true;
-        airdroppee.txHash = tx.hash;
+        recipient.sent = true;
+        recipient.txHash = tx.hash;
         fs.writeFileSync(process.env.DATA_FILE, JSON.stringify(data));
     }));
 }
